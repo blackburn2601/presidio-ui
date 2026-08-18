@@ -1,0 +1,18 @@
+# Mounts the extended recognizer registry into the analyzer.
+#
+# Only needed if the config is currently baked into the image rather than
+# bind-mounted. Place this next to your existing docker-compose.yml in
+# ~/presidio and adjust the service name if yours differs.
+#
+# Compose merges docker-compose.override.yml automatically:
+#     docker compose up -d
+#
+# The container path must match RECOGNIZER_REGISTRY_CONF_FILE. Check it with:
+#     docker exec presidio-analyzer-de printenv RECOGNIZER_REGISTRY_CONF_FILE
+
+services:
+  presidio-analyzer:
+    volumes:
+      - ./conf/recognizers.yaml:/usr/bin/presidio-analyzer/conf/recognizers.yaml:ro
+    environment:
+      RECOGNIZER_REGISTRY_CONF_FILE: /usr/bin/presidio-analyzer/conf/recognizers.yaml

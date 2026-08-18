@@ -1,0 +1,12 @@
+services:
+  presidio-ui:
+    build: .
+    image: presidio-ui:latest
+    container_name: presidio-ui
+    ports:
+      - "8080:8080"
+    environment:
+      # Point these at your running Presidio containers.
+      PRESIDIO_ANALYZER_URL: http://192.168.178.89:5002
+      PRESIDIO_ANONYMIZER_URL: http://192.168.178.89:5001
+    restart: unless-stopped

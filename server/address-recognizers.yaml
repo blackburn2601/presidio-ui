@@ -1,0 +1,110 @@
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Address recognizers for Presidio Analyzer (data-privacy-stack fork)
+  #
+  # Presidio's NLP models tag cities as LOCATION but ship no recognizer for street
+  # addresses. This adds one for German and English, plus a strict postal-code
+  # recognizer that requires a neighbouring place name.
+  #
+  # These entries belong in the `recognizers:` list of the file referenced by
+  # RECOGNIZER_REGISTRY_CONF_FILE. Use merge-address-recognizers.py to insert them
+  # without disturbing the rest of that file.
+  #
+  # NOTE ON REGEX FLAGS
+  #   The loader applies the file's top-level `global_regex_flags` (default 26 =
+  #   DOTALL|MULTILINE|IGNORECASE) to *every* pattern recognizer; there is no
+  #   per-recognizer override. Street names depend on capitalisation, so each
+  #   pattern below is wrapped in a scoped `(?-i: ... )` group that switches
+  #   IGNORECASE off for itself alone. Do not remove that wrapper, and do not
+  #   change global_regex_flags on account of these recognizers.
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  # Streets: "Hauptstraße 14", "Von-der-Tann-Str. 5a", "Am Markt 3",
+  # "Karl-Liebknecht-Straße 29-31", "Alte Poststrasse 7", "Bahnhofsweg 12b".
+  - name: StrasseHausnummerRecognizer
+    type: custom
+    enabled: true
+    supported_entity: DE_STREET_ADDRESS
+    supported_languages:
+      - language: de
+        context:
+          - straße
+          - strasse
+          - hausnummer
+          - anschrift
+          - adresse
+          - wohnhaft
+          - wohnanschrift
+          - wohnsitz
+          - lieferadresse
+          - rechnungsadresse
+          - ansässig
+    patterns:
+      - name: de_street_address
+        regex: "(?-i:\\b(?:[A-ZÄÖÜ][\\wäöüß]*[-\\s]|[a-zäöü]{2,5}-)*[A-ZÄÖÜ]?[\\wäöüß]*?(?:Stra(?:ß|ss)e|str(?:aß|ass)e|Str\\.|str\\.|[Ww]eg|[Gg]asse|[Aa]llee|[Pp]latz|[Rr]ing|[Dd]amm|[Uu]fer|[Cc]haussee|[Ss]teig|[Mm]arkt|[Pp]romenade)\\s+\\d{1,4}(?:\\s*[-/]\\s*\\d{1,4})?[a-zA-Z]?\\b)"
+        score: 0.75
+
+  # Postal codes, strict: five digits immediately followed by a place name.
+  # This deliberately rejects invoice, order and article numbers of the same
+  # length, which the built-in DePlzRecognizer flags once any address word
+  # appears anywhere in the surrounding window.
+  - name: PostleitzahlRecognizer
+    type: custom
+    enabled: true
+    supported_entity: DE_PLZ
+    supported_languages:
+      - language: de
+        context:
+          - plz
+          - postleitzahl
+          - postanschrift
+          - anschrift
+          - adresse
+          - wohnort
+          - wohnhaft
+          - straße
+          - strasse
+    patterns:
+      - name: de_plz_with_city
+        regex: "(?-i:\\b\\d{5}(?=\\s+[A-ZÄÖÜ][a-zäöüß]{2,}))"
+        score: 0.6
+
+  # English/US streets: "1600 Pennsylvania Avenue", "742 Evergreen Terrace Apt 3B".
+  - name: StreetAddressRecognizer
+    type: custom
+    enabled: true
+    supported_entity: STREET_ADDRESS
+    supported_languages:
+      - language: en
+        context:
+          - address
+          - street
+          - live
+          - lives
+          - ship
+          - shipping
+          - deliver
+          - delivery
+          - residence
+          - resides
+    patterns:
+      - name: en_street_address
+        regex: "(?-i:\\b\\d{1,5}\\s+(?:[A-Z][\\w.'-]*\\s){0,3}(?:Street|St\\.|Avenue|Ave\\.?|Road|Rd\\.?|Boulevard|Blvd\\.?|Lane|Ln\\.?|Drive|Dr\\.?|Court|Ct\\.?|Way|Place|Pl\\.?|Terrace|Parkway|Pkwy\\.?|Circle|Highway|Hwy\\.?)\\b(?:\\s+(?:Apt|Suite|Ste|Unit|#)\\.?\\s*[\\w-]+)?)"
+        score: 0.75
+
+  # US ZIP codes anchored to a preceding two-letter state code.
+  - name: UsZipCodeRecognizer
+    type: custom
+    enabled: true
+    supported_entity: US_ZIP_CODE
+    supported_languages:
+      - language: en
+        context:
+          - zip
+          - postal
+          - address
+          - mail
+          - state
+    patterns:
+      - name: us_zip_code
+        regex: "(?-i:(?<=\\b[A-Z]{2}\\s)\\d{5}(?:-\\d{4})?\\b)"
+        score: 0.6

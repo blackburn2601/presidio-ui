@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="de" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/shield.svg" type="image/svg+xml" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Oberfläche für Microsoft Presidio — personenbezogene Daten erkennen und anonymisieren." />
+    <title>Presidio Studio — Erkennung &amp; Anonymisierung</title>
+    <script>
+      // Apply the stored theme before first paint to avoid a flash.
+      (() => {
+        const stored = localStorage.getItem('presidio-ui:theme')
+        const dark = stored ? stored === 'dark'
+          : window.matchMedia('(prefers-color-scheme: dark)').matches
+        document.documentElement.classList.toggle('dark', dark)
+      })()
+    </script>
+  </head>
+  <body class="h-full">
+    <div id="app" class="h-full"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
